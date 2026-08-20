@@ -1,0 +1,36 @@
+[project]
+name = "systemlink-mcp"
+version = "0.1.0"
+description = "MCP server that exposes NI SystemLink with test-and-measurement-native tools"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [
+    { name = "David Oluwatimilehin \"Timi\" Folayan" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp",
+    "pydantic>=2",
+    "nisystemlink-clients>=2.32.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"

@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Machine-local MCP launch config (paths, API keys, write-enable flags).
+.cursor/mcp.json
+**/mcp.local.json
