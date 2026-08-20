@@ -60,21 +60,38 @@ $env:SYSTEMLINK_MCP_SIMULATE="1"; uv run server.py
 
 ## Real SystemLink
 
-Unset `SYSTEMLINK_MCP_SIMULATE`. Provide a server URI and API key (the SDK
-sends the key as `x-ni-api-key` via `HttpConfiguration`):
+The simulated backend is only used when `SYSTEMLINK_MCP_SIMULATE=1`, or when a
+live connect fails and `SYSTEMLINK_MCP_REQUIRE_REAL` is unset. A live response
+has `"backend": "systemlink"` and `"simulated": false`.
 
-```bash
-export SYSTEMLINK_SERVER_URI="https://yourserver.yourcompany.com"
-export SYSTEMLINK_API_KEY="..."
-uv run server.py
+1. Create an API key in SystemLink (Enterprise: a policy, then an API key; the
+   HTTP header the SDK sends is `x-ni-api-key`). SLE does not accept username
+   and password for programmatic access.
+2. Copy `.env.example` to `.env` (gitignored) and set:
+
+```text
+SYSTEMLINK_SERVER_URI=https://your-systemlink-host
+SYSTEMLINK_API_KEY=...
+SYSTEMLINK_MCP_REQUIRE_REAL=1
 ```
 
-Username/password is also supported (`SYSTEMLINK_USERNAME` /
-`SYSTEMLINK_PASSWORD`). If those env vars are absent, the backend tries
-`HttpConfigurationManager.get_configuration()`, which works on a machine that
-already has SystemLink Client or a Jupyter notebook host configured. If the
-real client cannot connect, the server logs a warning on stderr and falls back
-to simulation.
+Leave `SYSTEMLINK_MCP_SIMULATE` unset. On-prem SystemLink Server that still
+allows basic auth can use `SYSTEMLINK_USERNAME` / `SYSTEMLINK_PASSWORD`
+instead of a key. SystemLink Cloud can use the API key alone (no URI); the
+backend then constructs `CloudHttpConfiguration`.
+
+3. Probe before MCP so a failed login cannot silently become the fake fleet:
+
+```powershell
+uv run server.py --probe
+```
+
+You should see `"simulated": false` and a short `query_systems` preview from
+your server. Then launch MCP without the simulate flag, or point Cursor at
+`.cursor/mcp.json.live.example`.
+
+If `--probe` fails, the JSON error is from the SDK (`ApiException` / connect),
+not from dummy data.
 
 ## Tools
 
@@ -122,8 +139,8 @@ that transport is deprecated.
 
 ## Cursor
 
-Use `.cursor/mcp.json.example` as a template. Machine-local `.cursor/mcp.json`
-is gitignored.
+Use `.cursor/mcp.json.example` (simulator) or `.cursor/mcp.json.live.example`
+(real server). Machine-local `.cursor/mcp.json` is gitignored.
 
 ```json
 {

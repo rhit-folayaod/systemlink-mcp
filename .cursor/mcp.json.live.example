@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "systemlink-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "C:/Users/folayaod/personal/systemlink-mcp",
+        "server.py"
+      ],
+      "env": {
+        "SYSTEMLINK_MCP_REQUIRE_REAL": "1",
+        "SYSTEMLINK_SERVER_URI": "https://yourserver.yourcompany.com",
+        "SYSTEMLINK_API_KEY": "replace-me"
+      }
+    }
+  }
+}

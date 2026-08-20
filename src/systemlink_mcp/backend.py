@@ -13,6 +13,7 @@ import sys
 from typing import Any, Protocol, runtime_checkable
 
 from systemlink_mcp.config import Settings, load_settings
+from systemlink_mcp.errors import BackendError
 from systemlink_mcp.models import (
     AssetQuerySummary,
     CalibrationDueSummary,
@@ -138,6 +139,12 @@ class SystemLinkBackend(Protocol):
 def create_backend(settings: Settings | None = None) -> SystemLinkBackend:
     settings = settings or load_settings()
     if settings.simulate:
+        if settings.require_real:
+            raise BackendError(
+                "SYSTEMLINK_MCP_SIMULATE=1 is set, so the real backend will not run. "
+                "Unset it (and do not put it in mcp.json) to talk to SystemLink.",
+                code="simulate_forced",
+            )
         from systemlink_mcp.simulate import SimulatedBackend
 
         logger.info("Using simulated SystemLink backend (SYSTEMLINK_MCP_SIMULATE is set).")
@@ -153,6 +160,13 @@ def create_backend(settings: Settings | None = None) -> SystemLinkBackend:
         )
         return backend
     except Exception as exc:
+        if settings.require_real:
+            if isinstance(exc, BackendError):
+                raise
+            raise BackendError(
+                f"Could not connect to SystemLink: {exc}",
+                code="connect_failed",
+            ) from exc
         from systemlink_mcp.simulate import SimulatedBackend
 
         logger.warning(

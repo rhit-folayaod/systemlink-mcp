@@ -25,11 +25,13 @@ Env: SYSTEMLINK_MCP_SIMULATE=1 force the fake backend
 from __future__ import annotations
 
 import argparse
+import json
+from dataclasses import replace
 from typing import Any
 
 from fastmcp import FastMCP
 
-from systemlink_mcp.backend import configure_logging, get_backend
+from systemlink_mcp.backend import configure_logging, create_backend, get_backend
 from systemlink_mcp.config import load_settings
 from systemlink_mcp.errors import BackendError, error_dict
 from systemlink_mcp.models import CalStatus, GroupBy
@@ -365,6 +367,33 @@ def execute_notebook(
     )
 
 
+def _probe() -> int:
+    """Connect to SystemLink and print a small live sample. Never falls back to sim."""
+    configure_logging()
+    settings = replace(load_settings(), require_real=True)
+    try:
+        backend = create_backend(settings)
+    except BackendError as exc:
+        print(json.dumps(exc.to_dict(), indent=2), flush=True)
+        return 1
+    payload = _run(
+        backend.query_systems,
+        alias=None,
+        connected=None,
+        preview_limit=5,
+    )
+    report = {
+        "ok": payload.get("ok", True),
+        "backend": getattr(backend, "name", None),
+        "simulated": getattr(backend, "simulated", None),
+        "query_systems": payload,
+    }
+    print(json.dumps(report, indent=2, default=str), flush=True)
+    if payload.get("ok") is False or getattr(backend, "simulated", True):
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="systemlink-mcp MCP server")
     parser.add_argument(
@@ -374,7 +403,14 @@ def main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument(
+        "--probe",
+        action="store_true",
+        help="Connect to live SystemLink, print a sample, and exit. Does not start MCP.",
+    )
     args = parser.parse_args(argv)
+    if args.probe:
+        raise SystemExit(_probe())
     if args.http:
         mcp.run(transport="http", host=args.host, port=args.port)
     else:

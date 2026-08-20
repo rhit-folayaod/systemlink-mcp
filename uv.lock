@@ -1759,6 +1759,7 @@ dependencies = [
     { name = "fastmcp" },
     { name = "nisystemlink-clients" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -1772,6 +1773,7 @@ requires-dist = [
     { name = "fastmcp" },
     { name = "nisystemlink-clients", specifier = ">=2.32.1" },
     { name = "pydantic", specifier = ">=2" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata.requires-dev]

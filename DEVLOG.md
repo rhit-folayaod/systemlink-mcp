@@ -262,6 +262,19 @@ comprehension in an instance method.
 **Solution.** Call `self._preview_result`. Ruff `F821` would have caught this
 before pytest if lint ran first; CI now runs ruff then pytest.
 
+### Problem 15 — Live SystemLink looked unused because every example forced simulation
+
+Tests, the Inspector command, and `.cursor/mcp.json.example` all set
+`SYSTEMLINK_MCP_SIMULATE=1`. The real backend already existed, but a failed
+connect also fell back to the fake, so a missing URL/key looked like a working
+server.
+
+**Solution.** `uv run server.py --probe` sets `SYSTEMLINK_MCP_REQUIRE_REAL=1`,
+connects through `nisystemlink-clients`, prints a `query_systems` sample, and
+exits non-zero on simulation or API errors. `.env` is loaded via python-dotenv
+so secrets stay out of git. Cursor live config is
+`.cursor/mcp.json.live.example`.
+
 ---
 
 ## Phase 7 — Docs and Inspector

@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+# Process env (Cursor mcp.json, the shell) wins over the file.
+load_dotenv(_REPO_ROOT / ".env", override=False)
 
 
 def _truthy(name: str) -> bool:
@@ -13,6 +20,7 @@ class Settings:
     """Process configuration from environment variables."""
 
     simulate: bool
+    require_real: bool
     allow_write: bool
     server_uri: str | None
     api_key: str | None
@@ -36,6 +44,7 @@ def load_settings() -> Settings:
         seed = 42
     return Settings(
         simulate=_truthy("SYSTEMLINK_MCP_SIMULATE"),
+        require_real=_truthy("SYSTEMLINK_MCP_REQUIRE_REAL"),
         allow_write=_truthy("SYSTEMLINK_MCP_ALLOW_WRITE"),
         server_uri=os.getenv("SYSTEMLINK_SERVER_URI") or None,
         api_key=os.getenv("SYSTEMLINK_API_KEY") or None,

@@ -133,6 +133,10 @@ class RealBackend:
                     kwargs["username"] = settings.username
                     kwargs["password"] = settings.password
                 configuration = HttpConfiguration(**kwargs)
+            elif settings.api_key:
+                from nisystemlink.clients.core import CloudHttpConfiguration
+
+                configuration = CloudHttpConfiguration(settings.api_key)
             else:
                 configuration = HttpConfigurationManager.get_configuration()
             self._test = TestMonitorClient(configuration=configuration)
