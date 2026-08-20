@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "systemlink-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "C:/Users/folayaod/personal/systemlink-mcp",
+        "server.py"
+      ],
+      "env": {
+        "SYSTEMLINK_MCP_SIMULATE": "1"
+      }
+    }
+  }
+}
